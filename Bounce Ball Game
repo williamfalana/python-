@@ -1,0 +1,90 @@
+import pygame
+import random
+
+# Initialize pygame8
+pygame.init()
+
+# Screen dimensions
+WIDTH, HEIGHT = 600, 400
+win = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Bounce Game")
+
+# Colors
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+BALL_COLOR = (255, 0, 0)
+PADDLE_COLOR = (0, 255, 0)
+
+# Ball setup
+ball_radius = 10
+ball_x = WIDTH // 2
+ball_y = HEIGHT // 2
+ball_dx = 4 * random.choice([-1, 1])
+ball_dy = -4
+
+# Paddle setup
+paddle_width = 100
+paddle_height = 10
+paddle_x = WIDTH // 2 - paddle_width // 2
+paddle_y = HEIGHT - 30
+paddle_speed = 7
+
+# Font
+font = pygame.font.SysFont("comicsansms", 24)
+
+# Score
+score = 0
+
+# Game loop
+running = True
+clock = pygame.time.Clock()
+
+while running:
+    clock.tick(60)  # FPS
+    win.fill(BLACK)
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+    # Move paddle
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_LEFT] and paddle_x > 0:
+        paddle_x -= paddle_speed
+    if keys[pygame.K_RIGHT] and paddle_x < WIDTH - paddle_width:
+        paddle_x += paddle_speed
+
+    # Move ball
+    ball_x += ball_dx
+    ball_y += ball_dy
+
+    # Bounce off walls
+    if ball_x <= 0 or ball_x >= WIDTH - ball_radius:
+        ball_dx *= -1
+    if ball_y <= 0:
+        ball_dy *= -1
+
+    # Ball hits paddle
+    if paddle_y < ball_y + ball_radius < paddle_y + paddle_height and paddle_x < ball_x < paddle_x + paddle_width:
+        ball_dy *= -1
+        score += 1
+
+    # Ball missed paddle
+    if ball_y > HEIGHT:
+        msg = font.render("Game Over! Final Score: " + str(score), True, WHITE)
+        win.blit(msg, (WIDTH // 4, HEIGHT // 2))
+        pygame.display.update()
+        pygame.time.delay(3000)
+        break
+
+    # Draw ball and paddle
+    pygame.draw.circle(win, BALL_COLOR, (ball_x, ball_y), ball_radius)
+    pygame.draw.rect(win, PADDLE_COLOR, (paddle_x, paddle_y, paddle_width, paddle_height))
+
+    # Draw score
+    score_text = font.render("Score: " + str(score), True, WHITE)
+    win.blit(score_text, (10, 10))
+
+    pygame.display.update()
+
+pygame.quit()
